@@ -7,9 +7,6 @@ use Czdb\Entity\IndexBlock;
 use Czdb\Utils\Decryptor;
 use Czdb\Utils\HyperHeaderDecoder;
 
-/**
- * DbSearcher 类用于数据库搜索，支持内存搜索和B树搜索。
- */
 class DbSearcher {
     const SUPER_PART_LENGTH = 17;
     const FIRST_INDEX_PTR = 5;
@@ -36,14 +33,6 @@ class DbSearcher {
     private $geoMapData = null;
     private $headerSize = 0;
 
-    /**
-     * 构造函数，初始化数据库搜索器。
-     *
-     * @param string $dbFile 数据库文件路径。
-     * @param string $queryType 查询类型，支持 MEMORY 和 BTREE。
-     * @param string $key 解密密钥。
-     * @throws Exception 如果文件打开失败或IP格式错误。
-     */
     public function __construct($dbFile, $queryType, $key) {
         $this->queryType = $queryType;
         $this->fileName = $dbFile;
@@ -70,13 +59,6 @@ class DbSearcher {
         }
     }
 
-    /**
-     * 根据IP地址搜索数据块。
-     *
-     * @param string $ip IP地址。
-     * @return string|null 返回找到的地理位置，如果没有找到返回 null。
-     * @throws Exception 如果IP格式错误。
-     */
     public function search($ip) {
         $ipBytes = $this->getIpBytes($ip);
 
@@ -95,9 +77,6 @@ class DbSearcher {
         }
     }
 
-    /**
-     * 关闭数据库文件并释放资源。
-     */
     public function close() {
         // Close file handle
         if (is_resource($this->raf)) {
@@ -112,14 +91,6 @@ class DbSearcher {
         $this->geoMapData = null;
     }
 
-    /**
-     * 比较两个字节序列。
-     *
-     * @param array $bytes1 第一个字节序列。
-     * @param array $bytes2 第二个字节序列。
-     * @param int $length 比较的长度。
-     * @return int 返回比较结果：-1 表示 $bytes1 < $bytes2，1 表示 $bytes1 > $bytes2，0 表示相等。
-     */
     private function compareBytes($bytes1, $bytes2, $length) {
         // unpack的数组下标从1开始
         for ($i = 1; $i <= $length; $i++) {
@@ -135,12 +106,6 @@ class DbSearcher {
         return 0;
     }
 
-    /**
-     * 内存搜索实现。
-     *
-     * @param array $ip IP地址的字节序列。
-     * @return DataBlock|null 返回找到的数据块，如果没有找到返回 null。
-     */
     private function memorySearch($ip) {
         $l = 0;
         $h = $this->totalIndexBlocks;
@@ -179,12 +144,6 @@ class DbSearcher {
         return new DataBlock($region, $dataPtr);
     }
 
-    /**
-     * B树搜索实现。
-     *
-     * @param array $ip IP地址的字节序列。
-     * @return DataBlock|null 返回找到的数据块，如果没有找到返回 null。
-     */
     private function bTreeSearch($ip) {
         $sptrNeptr = $this->searchInHeader($ip);
 
@@ -244,13 +203,6 @@ class DbSearcher {
         return new DataBlock($region, $dataPtr); // Assume DataBlock class is defined elsewhere
     }
 
-    /**
-     * 将IP地址转换为字节序列。
-     *
-     * @param string $ip IP地址。
-     * @return array 返回IP地址的字节序列。
-     * @throws Exception 如果IP格式错误。
-     */
     private function getIpBytes($ip) {
         if ($this->dbType == 4) {
             // For IPv4, use filter_var to validate and inet_pton to convert
@@ -268,12 +220,6 @@ class DbSearcher {
         return unpack('C*', $ipBytes);
     }
 
-    /**
-     * 在头部信息中搜索IP地址。
-     *
-     * @param array $ip IP地址的字节序列。
-     * @return array 返回搜索结果，包含起始指针和结束指针。
-     */
     private function searchInHeader($ip) {
         $l = 0;
         $h = $this->headerLength - 1;
@@ -318,11 +264,6 @@ class DbSearcher {
         return [$sptr, $eptr];
     }
 
-    /**
-     * 加载地理位置映射表。
-     *
-     * @param string $key 解密密钥。
-     */
     private function loadGeoSetting($key) {
         $this->fseek($this->raf, self::END_INDEX_PTR);
         $data = fread($this->raf, 4);
@@ -349,10 +290,6 @@ class DbSearcher {
         $this->geoMapData = $decryptor->decrypt($this->geoMapData);
     }
 
-    /**
-     * 为内存搜索初始化参数。
-     * @throws Exception 如果文件大小不匹配。
-     */
     private function initializeForMemorySearch() {
         $this->fseek($this->raf, 0);
         $fileSize = filesize($this->fileName) - $this->headerSize;
@@ -374,9 +311,6 @@ class DbSearcher {
         $this->initHeaderBlock($headerBlockBytes, $this->totalHeaderBlockSize);
     }
 
-    /**
-     * 为B树搜索模式初始化参数。
-     */
     private function initBtreeModeParam() {
         $this->fseek( $this->raf, 0);
         $data = fread($this->raf, self::SUPER_PART_LENGTH);
@@ -387,12 +321,6 @@ class DbSearcher {
         $this->initHeaderBlock($data, $this->totalHeaderBlockSize);
     }
 
-    /**
-     * 初始化头部块。
-     *
-     * @param string $headerBytes 头部块的字节序列。
-     * @param int $size 头部块的大小。
-     */
     private function initHeaderBlock($headerBytes, $size) {
         $indexLength = 20;
 
@@ -414,12 +342,6 @@ class DbSearcher {
         $this->headerLength = $idx;
     }
 
-    /**
-     * 移动文件指针
-     *
-     * @param resource $handler 文件句柄。
-     * @param int $offset 偏移量。
-     */
     private function fseek($handler, $offset) {
         fseek($handler, $this->headerSize + $offset);
     }
