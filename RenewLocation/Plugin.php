@@ -11,6 +11,7 @@ use Typecho\Widget\Helper\Form\Element\Textarea;
 use Typecho\Widget\Helper\Form\Element\Text as TextElement;
 use Utils\NoPersonal;
 use Utils\Helper;
+use Typecho\Plugin\Exception as PluginException;
 
 if (!defined('__TYPECHO_ROOT_DIR__')) {
     exit;
@@ -37,8 +38,8 @@ class Plugin implements PluginInterface
         Helper::addRoute('renew_location_action', '/action/renew-location', Action::class, 'action');
         
         $dataDir = Settings::dataRoot();
-        if (!is_dir($dataDir)) {
-            mkdir($dataDir, 0755, true);
+        if ((!is_dir($dataDir) && !mkdir($dataDir, 0755, true)) || !is_dir($dataDir) || !is_writable($dataDir)) {
+            throw new PluginException(_t('RenewLocation 数据目录创建失败'));
         }
 
         return _t('RenewLocation 已启用');

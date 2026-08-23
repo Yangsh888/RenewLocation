@@ -110,7 +110,7 @@ class Action extends Widget implements ActionInterface
         try {
             $lock = $this->acquireUpdateLock($dataDir);
         } catch (\Throwable $e) {
-            return ['success' => false, 'message' => $e->getMessage()];
+            return ['success' => false, 'message' => '更新锁创建失败'];
         }
 
         $stagingDir = '';
@@ -207,7 +207,7 @@ class Action extends Widget implements ActionInterface
                 }
             }
 
-            return ['success' => false, 'message' => $e->getMessage()];
+            return ['success' => false, 'message' => '位置数据库更新失败'];
         } finally {
             if ($zip instanceof \ZipArchive) {
                 $zip->close();

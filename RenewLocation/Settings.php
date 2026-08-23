@@ -37,7 +37,7 @@ class Settings
             'enabled' => '1',
             'showSystem' => '1',
             'showBrowser' => '1',
-            'showLocation' => '1',
+            'showLocation' => '0',
             'showIpText' => '0',
             'autoUpdate' => '1',
             'updateDays' => 7,

@@ -112,10 +112,14 @@ class View
             return;
         }
 
-        $json = Common::jsonEncode($payload, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES, '{}');
+        $json = Common::jsonEncode(
+            $payload,
+            JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT,
+            '{}'
+        );
 
         echo '<script>(function(){var data=' . $json . ';'
-            . 'var icons=' . json_encode(self::icons(), JSON_UNESCAPED_SLASHES) . ';'
+            . 'var icons=' . json_encode(self::icons(), JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) . ';'
             . 'var makeTag=function(item){var el=document.createElement("span");el.className="renew-location-tag"+(item.kind?" "+item.kind:"");'
             . 'if(item.tip){el.className+=" has-tip";el.setAttribute("data-tip",item.tip);el.setAttribute("tabindex","0");}'
             . 'var icon=document.createElement("span");icon.className="renew-location-icon";icon.innerHTML=icons[item.icon]||icons.browser;'

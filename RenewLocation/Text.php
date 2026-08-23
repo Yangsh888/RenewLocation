@@ -18,8 +18,10 @@ class Text
         $value = trim((string) $value);
         $value = preg_replace('/[\x00-\x1F\x7F]+/u', '', $value) ?? '';
         
-        if ($max > 0 && mb_strlen($value, 'UTF-8') > $max) {
+        if ($max > 0 && function_exists('mb_strlen') && mb_strlen($value, 'UTF-8') > $max) {
             $value = mb_substr($value, 0, $max, 'UTF-8');
+        } elseif ($max > 0 && strlen($value) > $max) {
+            $value = substr($value, 0, $max);
         }
 
         return $value;
