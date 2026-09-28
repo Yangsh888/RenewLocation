@@ -6,7 +6,6 @@ namespace TypechoPlugin\RenewLocation;
 use Typecho\Common;
 use Typecho\Widget;
 use Utils\Helper;
-
 use Widget\ActionInterface;
 
 if (!defined('__TYPECHO_ROOT_DIR__')) {
@@ -32,7 +31,10 @@ class Action extends Widget implements ActionInterface
             }
 
             $settings = Settings::load();
-            $token = trim((string) $this->request->get('token'));
+            $token = trim((string) $this->request->post('token'));
+            if ($token === '') {
+                $token = trim((string) $this->request->get('token'));
+            }
             $secret = (string) ($settings['updateSecret'] ?? '');
             if ($secret === '' || !Common::timeTokenValidate($token, $secret, 30)) {
                 $this->response->throwJson(['success' => false, 'message' => 'Invalid update token']);
@@ -401,6 +403,10 @@ class Action extends Widget implements ActionInterface
             }
             if ($size > 0 && ($compressed === 0 || $size > $compressed * self::MAX_COMPRESSION_RATIO)) {
                 throw new \RuntimeException('ZIP entry compression ratio exceeds limit');
+            }
+
+            if ($name === '' || str_contains($name, "\0") || str_starts_with($name, '/') || preg_match('#(^|/)\.\.(/|$)#', $name) === 1) {
+                throw new \RuntimeException('Unsafe ZIP entry path');
             }
 
             $filename = basename($name);

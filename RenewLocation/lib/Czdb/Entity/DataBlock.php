@@ -2,6 +2,7 @@
 
 namespace Czdb\Entity;
 
+#[\AllowDynamicProperties]
 class DataBlock {
     private $region;
     private $dataPtr;

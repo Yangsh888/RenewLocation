@@ -7,6 +7,7 @@ use Czdb\Entity\IndexBlock;
 use Czdb\Utils\Decryptor;
 use Czdb\Utils\HyperHeaderDecoder;
 
+#[\AllowDynamicProperties]
 class DbSearcher {
     const SUPER_PART_LENGTH = 17;
     const FIRST_INDEX_PTR = 5;

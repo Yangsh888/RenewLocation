@@ -4,6 +4,7 @@ namespace Czdb\Entity;
 
 use Czdb\Utils\ByteUtil;
 
+#[\AllowDynamicProperties]
 class HyperHeaderBlock {
     const HEADER_SIZE = 12;
 

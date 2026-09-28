@@ -2,6 +2,7 @@
 
 namespace Czdb\Entity;
 
+#[\AllowDynamicProperties]
 class IndexBlock {
     private $startIp;
     private $endIp;

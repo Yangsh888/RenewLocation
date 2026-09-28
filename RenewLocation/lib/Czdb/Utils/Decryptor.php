@@ -1,6 +1,7 @@
 <?php
 namespace Czdb\Utils;
 
+#[\AllowDynamicProperties]
 class Decryptor {
     private $keyBytes;
     private $keyBytesLen;
