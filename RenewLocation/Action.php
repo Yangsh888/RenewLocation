@@ -75,20 +75,19 @@ class Action extends Widget implements ActionInterface
         $triggerUrl = Settings::actionUrl('update');
         $parts = parse_url($triggerUrl);
         if (is_array($parts) && isset($parts['host'])) {
-            $fp = @fsockopen(
-                (isset($parts['scheme']) && $parts['scheme'] === 'https' ? 'ssl://' : '') . $parts['host'],
-                $parts['port'] ?? (isset($parts['scheme']) && $parts['scheme'] === 'https' ? 443 : 80),
-                $errno,
-                $errstr,
-                1
-            );
-            if ($fp) {
-                $out = "POST " . ($parts['path'] ?? '/') . (isset($parts['query']) ? '?' . $parts['query'] : '') . " HTTP/1.1\r\n";
-                $out .= "Host: " . $parts['host'] . "\r\n";
-                $out .= "Content-Length: 0\r\n";
-                $out .= "Connection: Close\r\n\r\n";
-                fwrite($fp, $out);
-                fclose($fp);
+            $resolved = Common::resolveSafeHost($parts['host']);
+            if ($resolved !== null) {
+                $scheme = isset($parts['scheme']) && $parts['scheme'] === 'https' ? 'ssl://' : '';
+                $port = $parts['port'] ?? ($scheme !== '' ? 443 : 80);
+                $fp = @fsockopen($scheme . $resolved, $port, $errno, $errstr, 1);
+                if ($fp) {
+                    $out = "POST " . ($parts['path'] ?? '/') . (isset($parts['query']) ? '?' . $parts['query'] : '') . " HTTP/1.1\r\n";
+                    $out .= "Host: " . $parts['host'] . "\r\n";
+                    $out .= "Content-Length: 0\r\n";
+                    $out .= "Connection: Close\r\n\r\n";
+                    fwrite($fp, $out);
+                    fclose($fp);
+                }
             }
         }
     }
@@ -251,6 +250,11 @@ class Action extends Widget implements ActionInterface
     {
         $current = $url;
         for ($redirects = 0; $redirects <= 3; $redirects++) {
+            $currentParts = parse_url($current);
+            if (!is_array($currentParts) || empty($currentParts['host']) || !Common::checkSafeHost($currentParts['host'])) {
+                throw new \RuntimeException('Unsafe download URL');
+            }
+
             $context = stream_context_create([
                 'http' => [
                     'timeout' => $timeout,
